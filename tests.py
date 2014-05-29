@@ -1,7 +1,4 @@
-from nose.tools import with_setup
-from nose.tools import raises
-from nose.tools import assert_true
-from nose.tools import assert_equals
+from nose.tools import with_setup, raises, assert_true, assert_equals
 
 from dna_processing_script import *
 

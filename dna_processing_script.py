@@ -1,29 +1,36 @@
 #
-#input: files with dna sequences (fasta or genbank)
-#operations list:
-# GC-content for each file
-# DNA to RNA translation
-# RNA to aminoacids translation
-# multiple alignment for resulting sequences (using BLOSUM62)
-#save resulting multiple alignment to PHYLIP file
+# input: files with dna sequences (fasta or genbank)
+# operations list:
+#  GC-content for each file
+#  DNA to RNA translation
+#  RNA to aminoacids translation
+#  multiple alignment for resulting sequences (using BLOSUM62)
+# save resulting multiple alignment to PHYLIP file
 from Bio import SeqIO
 from Bio.SeqUtils import GC
-from Bio.Seq import transcribe
-from Bio.Seq import translate
+from Bio.Seq import transcribe, translate
 import os
 import sys
 
+
 def get_file_format(filename):
-    if os.path.splitext(filename)[1][1 : ] in ["fasta", "fa", "seq", "fsa", "fas",
-                "fna", "fnn", "faa", "frn"]: return "fasta"
-    if os.path.splitext(filename)[1][1 : ] in ["gb", "gbk"]: return "genbank"
+    if os.path.splitext(filename)[1][1: ] in [
+            "fasta", "fa", "seq", "fsa", "fas",
+            "fna", "fnn", "faa", "frn"
+        ]:
+        return "fasta"
+    if os.path.splitext(filename)[1][1: ] in ["gb", "gbk"]:
+        return "genbank"
     raise ValueError("Invalid file extension")
+
 
 def load_from_file(filename):
     return [x for x in SeqIO.parse(open(filename, "rU"), get_file_format(filename))]
 
+
 def get_info(seq):
     return GC(seq), transcribe(seq), translate(seq)
+
 
 def print_information(filename, sequences_list):
     print "...processing {0}...".format(filename)
@@ -37,21 +44,27 @@ def print_information(filename, sequences_list):
         print sequences_list[i]
         sequence_info = get_info(sequences_list[i].seq)
         print " GC: {0}\n transcribed:\n {1} \n translated:\n {2}".format(*sequence_info)
-        processed_data.append(SeqRecord(sequence_info[2],
-                                     id="{0}.{1}".format(filename, i), name=sequences_list[i].name,
-                                     description=sequences_list[i].description))
+        processed_data.append(SeqRecord(
+            sequence_info[2],
+            id="{0}.{1}".format(filename, i),
+            name=sequences_list[i].name,
+            description=sequences_list[i].description
+            ))
     return processed_data
+
 
 def align(data):
     from Bio.Align.Applications import MuscleCommandline
-    muscle_cline = MuscleCommandline(clw=True)
+    muscle_cline = MuscleCommandline(clw = True)
     import subprocess
     import sys
-    child = subprocess.Popen(str(muscle_cline) + " -matrix BLOSUM62",
-        stdin = subprocess.PIPE,
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE,
-        shell = (sys.platform!="win32"))
+    child = subprocess.Popen(
+        str(muscle_cline) + " -matrix BLOSUM62",
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=(sys.platform != "win32")
+        )
 
     SeqIO.write(data, child.stdin, "fasta")
     child.stdin.close()
@@ -59,9 +72,11 @@ def align(data):
     from Bio import AlignIO
     return AlignIO.read(child.stdout, "clustal")
 
+
 def print_to_phylip(alignment, filename):
     from Bio import AlignIO
     AlignIO.write(alignment, filename, "phylip-relaxed")
+
 
 def main(filenames):
     sequences = {}
@@ -73,7 +88,7 @@ def main(filenames):
         except IOError:
             print >> sys.stderr, "file {0} doesn't exist".format(filename)
     processed_data = []
-    for k,v in sequences.items():
+    for k, v in sequences.items():
         processed_data += print_information(k, v)
     try:
         alignment = align(processed_data)
@@ -84,9 +99,11 @@ def main(filenames):
     print_to_phylip(alignment, "resulting_alignment.phy")
     print "all done (alignment can be found at file named 'resulting_alignment.phy')"
 
+
 if __name__ == "__main__":
     filenames = sys.argv[1 : ]
-    information_message = "Usage: provide one of more fasta or genbank files with nucleotide sequences"
+    information_message = "Usage: provide one of more fasta or genbank files " +
+        "with nucleotide sequences"
     if len(filenames) < 1:
         print >> sys.stderr, information_message
         exit(1)
