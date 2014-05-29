@@ -23,7 +23,7 @@ def get_info_test():
 def load_from_file_test():
     filename = "test_dataset/gene1.fasta"
     sequences = load_from_file(filename)
-    result_sequences = print_information(filename, sequences)
+    result_sequences = print_information(0, filename, sequences)
     assert_equals(len(result_sequences), 1)
     align(result_sequences)
 
@@ -32,5 +32,5 @@ def load_from_file_2_test():
     filenames = ["test_dataset/gene1.fasta", "test_dataset/gene2.fasta"]
     results = []
     for filename in filenames:
-        results += print_information(filename, load_from_file(filename))
+        results += print_information(0, filename, load_from_file(filename))
     assert align(results)

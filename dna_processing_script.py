@@ -1,11 +1,3 @@
-#
-# input: files with dna sequences (fasta or genbank)
-# operations list:
-#  GC-content for each file
-#  DNA to RNA translation
-#  RNA to aminoacids translation
-#  multiple alignment for resulting sequences (using BLOSUM62)
-# save resulting multiple alignment to PHYLIP file
 from Bio import SeqIO
 from Bio.SeqUtils import GC
 from Bio.Seq import transcribe, translate
@@ -32,8 +24,8 @@ def get_info(seq):
     return GC(seq), transcribe(seq), translate(seq)
 
 
-def print_information(filename, sequences_list):
-    print "...processing {0}...".format(filename)
+def print_information(file_id, filename, sequences_list):
+    print "...processing file N {0} ({1})...".format(file_id, filename)
     print "sequences found: {0}".format(len(sequences_list))
     from Bio.Seq import Seq
     from Bio.SeqRecord import SeqRecord
@@ -46,7 +38,7 @@ def print_information(filename, sequences_list):
         print " GC: {0}\n transcribed:\n {1} \n translated:\n {2}".format(*sequence_info)
         processed_data.append(SeqRecord(
             sequence_info[2],
-            id="{0}.{1}".format(filename, i),
+            id="file_{0}.seq_{1}".format(file_id, i),
             name=sequences_list[i].name,
             description=sequences_list[i].description
             ))
@@ -88,8 +80,10 @@ def main(filenames):
         except IOError:
             print >> sys.stderr, "file {0} doesn't exist".format(filename)
     processed_data = []
+    index = 0
     for k, v in sequences.items():
-        processed_data += print_information(k, v)
+        processed_data += print_information(index, k, v)
+        index += 1
     try:
         alignment = align(processed_data)
     except ValueError:
@@ -102,7 +96,7 @@ def main(filenames):
 
 if __name__ == "__main__":
     filenames = sys.argv[1 : ]
-    information_message = "Usage: provide one of more fasta or genbank files " +
+    information_message = "Usage: provide one of more fasta or genbank files " + \
         "with nucleotide sequences"
     if len(filenames) < 1:
         print >> sys.stderr, information_message

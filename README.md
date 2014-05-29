@@ -7,7 +7,7 @@ Input: files with dna sequences (fasta or genbank)
 
 Operations list:
 - GC-content for each file
-- DNA to RNA translation
+- DNA to RNA transcription
 - RNA to aminoacids translation
 - multiple alignment for resulting sequences (using BLOSUM62)
 - save resulting multiple alignment to PHYLIP file
